@@ -41,12 +41,12 @@ function run() {
             style.textContent = SIMPLIFY_STYLES;
             document.head.appendChild(style);
         }
-        
+
         if (res.highlight) {
             const style = document.createElement('style');
             style.textContent = HIGHLIGHT_STYLE;
             document.head.appendChild(style);
-            
+
             function findTeam(teamName) {
                 let standings = document.getElementById('main-standings-container');
                 let spans = Object.values(standings.querySelectorAll('span'));
@@ -57,7 +57,7 @@ function run() {
                 return spans.indexOf(teamNameElem)
             }
 
-            
+
             let standingsNode = document
                 .getElementById("main-standings-container")
 
@@ -75,14 +75,14 @@ function run() {
 
                 let homeTeamNodeIndex = findTeam(homeTeam);
                 let awayTeamNodeIndex = findTeam(awayTeam);
-                
+
                 let teamNodes = standingsNode.querySelectorAll("span");
                 teamNodes.forEach((node) => node.classList.remove("highlight"));
-                
+
                 let allNodes = Object.values(standingsNode.querySelectorAll('span'));
                 let homeHiglightNodes = allNodes.slice(homeTeamNodeIndex, homeTeamNodeIndex + SPAN_ROW_OFFSET);
                 let awayHiglightNodes = allNodes.slice(awayTeamNodeIndex, awayTeamNodeIndex + SPAN_ROW_OFFSET);
-                
+
                 homeHiglightNodes.forEach(span => span.classList.add('highlight'))
                 awayHiglightNodes.forEach(span => span.classList.add('highlight'))
             }
@@ -99,5 +99,10 @@ function run() {
 
 }
 
+browser.runtime.onMessage.addListener(message => {
+    if (message.refresh) {
+        window.location.reload();
+    }
+})
 
 setTimeout(() => run(), 300)

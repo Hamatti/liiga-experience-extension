@@ -1,3 +1,11 @@
+function refresh(tabs) {
+    /* tell the active tab to refresh after settings are saved */
+    browser.tabs.sendMessage(
+        tabs[0].id,
+        { refresh: true }
+    )
+}
+
 function saveOptions(e) {
     const simplifiedElem = document.querySelector("#simplified").checked;
     const highlightElem = document.querySelector("#highlight").checked;
@@ -6,7 +14,8 @@ function saveOptions(e) {
         highlight: highlightElem
     });
     e.preventDefault();
-    window.location.reload();
+
+    browser.tabs.query({ active: true, currentWindow: true }).then(refresh)
 }
 
 function restoreOptions() {
@@ -16,7 +25,7 @@ function restoreOptions() {
         document.querySelector('#highlight').checked = res.highlight
     });
 
-    
+
 }
 
 document.addEventListener('DOMContentLoaded', restoreOptions);
