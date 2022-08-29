@@ -1,0 +1,32 @@
+{
+    "manifest_version": 2,
+    "name": "Liiga Experience",
+    "version": "1.0.0",
+    "description": "Customize liiga.fi user experience",
+    "content_scripts": [
+        {
+            "matches": [
+                "*://liiga.fi/*"
+            ],
+            "js": [
+                "liiga-experience.js"
+            ]
+        }
+    ],
+    "options_ui": {
+        "page": "options/options.html",
+        "browser_style": true
+    },
+    "browser_action": {
+        "default_popup": "options/options.html",
+        "browser_style": true
+    },
+    "permissions": [
+        "storage"
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "liiga-experience@hamatti.org"
+        }
+    }
+}
