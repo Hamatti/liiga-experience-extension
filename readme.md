@@ -1,5 +1,7 @@
 # Liiga Experience
 
+**This is still in pre-publish phase development**
+
 This add-on enables customization for [Liiga.fi](https://liiga.fi/) website.
 
 ## Settings & features
