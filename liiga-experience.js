@@ -34,75 +34,101 @@ const HIGHLIGHT_STYLE = `.highlight {
 }`;
 
 function run() {
-    const localStorage = browser.storage.local.get(['simplified', 'highlight']);
-    localStorage.then(res => {
-        if (res.simplified) {
-            const style = document.createElement('style');
-            style.textContent = SIMPLIFY_STYLES;
-            document.head.appendChild(style);
+  const localStorage = browser.storage.local.get(["simplified", "highlight"]);
+  localStorage.then((res) => {
+    if (res.simplified) {
+      const style = document.createElement("style");
+      style.textContent = SIMPLIFY_STYLES;
+      document.head.appendChild(style);
+    }
+
+    if (res.highlight) {
+      const style = document.createElement("style");
+      style.textContent = HIGHLIGHT_STYLE;
+      document.head.appendChild(style);
+
+      function findTeam(teamName) {
+        let standings = document.getElementById("main-standings-container");
+        let spans = Object.values(standings.querySelectorAll("span"));
+        let teamNameElem = spans.find((elem) => {
+          const lastSpan = elem.querySelector("span:last-child");
+          return lastSpan?.textContent.trim() === teamName;
+        });
+        return spans.indexOf(teamNameElem);
+      }
+
+      let standingsNode = document.getElementById("main-standings-container");
+
+      function onHover(event) {
+        console.log(`hovering`, event.target);
+        let children = event.target.children;
+
+        let teamsContainer;
+        if (children.length === 5) {
+          teamsContainer = children[3];
+        } else {
+          teamsContainer = children[1];
         }
+        let homeTeam = teamsContainer.children[0].children[0].innerText;
+        let awayTeam = teamsContainer.children[2].children[1].innerText;
 
-        if (res.highlight) {
-            const style = document.createElement('style');
-            style.textContent = HIGHLIGHT_STYLE;
-            document.head.appendChild(style);
+        let homeTeamNodeIndex = findTeam(homeTeam);
+        let awayTeamNodeIndex = findTeam(awayTeam);
 
-            function findTeam(teamName) {
-                let standings = document.getElementById('main-standings-container');
-                let spans = Object.values(standings.querySelectorAll('span'));
-                let teamNameElem = spans.find(elem => {
-                    const lastSpan = elem.querySelector('span:last-child');
-                    return lastSpan?.textContent.trim() === teamName;
-                })
-                return spans.indexOf(teamNameElem)
-            }
+        let teamNodes = standingsNode.querySelectorAll("span");
+        teamNodes.forEach((node) => node.classList.remove("highlight"));
 
+        let allNodes = Object.values(standingsNode.querySelectorAll("span"));
+        let homeHiglightNodes = allNodes.slice(
+          homeTeamNodeIndex,
+          homeTeamNodeIndex + SPAN_ROW_OFFSET
+        );
+        let awayHiglightNodes = allNodes.slice(
+          awayTeamNodeIndex,
+          awayTeamNodeIndex + SPAN_ROW_OFFSET
+        );
 
-            let standingsNode = document
-                .getElementById("main-standings-container")
+        homeHiglightNodes.forEach((span) => span.classList.add("highlight"));
+        awayHiglightNodes.forEach((span) => span.classList.add("highlight"));
+      }
 
-            function onHover(event) {
-                let children = event.target.children;
+      let scoreContainers = Object.values(
+        document.querySelectorAll(".LatestGames_gameCardContainer__CCvGv")
+      );
 
-                let teamsContainer;
-                if (children.length === 5) {
-                    teamsContainer = children[3];
-                } else {
-                    teamsContainer = children[1];
-                }
-                let homeTeam = teamsContainer.children[0].children[0].innerText;
-                let awayTeam = teamsContainer.children[2].children[1].innerText;
-
-                let homeTeamNodeIndex = findTeam(homeTeam);
-                let awayTeamNodeIndex = findTeam(awayTeam);
-
-                let teamNodes = standingsNode.querySelectorAll("span");
-                teamNodes.forEach((node) => node.classList.remove("highlight"));
-
-                let allNodes = Object.values(standingsNode.querySelectorAll('span'));
-                let homeHiglightNodes = allNodes.slice(homeTeamNodeIndex, homeTeamNodeIndex + SPAN_ROW_OFFSET);
-                let awayHiglightNodes = allNodes.slice(awayTeamNodeIndex, awayTeamNodeIndex + SPAN_ROW_OFFSET);
-
-                homeHiglightNodes.forEach(span => span.classList.add('highlight'))
-                awayHiglightNodes.forEach(span => span.classList.add('highlight'))
-            }
-
-            let scoreContainers = Object.values(
-                document.querySelectorAll(".LatestGames_gameCardContainer__CCvGv")
-            );
-
-            scoreContainers.forEach((container) =>
-                container.addEventListener("mouseenter", onHover)
-            );
-        }
-    })
-
+      scoreContainers.forEach((container) => {
+        container.addEventListener("mouseenter", onHover);
+      });
+    }
+  });
 }
 
-browser.runtime.onMessage.addListener(message => {
-    if (message.refresh) {
-        window.location.reload();
-    }
-})
+browser.runtime.onMessage.addListener((message) => {
+  if (message.refresh) {
+    window.location.reload();
+  }
+});
 
-setTimeout(() => run(), 300)
+function waitForElm(selector) {
+  return new Promise((resolve) => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector));
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      if (document.querySelector(selector)) {
+        resolve(document.querySelector(selector));
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
+
+waitForElm(".LatestGames_gameCardContainer__CCvGv").then((elm) => {
+  setTimeout(run, 200);
+});
